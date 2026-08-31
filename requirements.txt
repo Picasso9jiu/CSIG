@@ -1,0 +1,13 @@
+# Tested runtime: Python 3.9, PyTorch 1.9.1+cu111, CUDA 11.1.
+# Install torch/torchvision from the PyTorch CUDA 11.1 wheel index first;
+# see README.md for the exact commands.
+numpy==1.23.5
+pyyaml==6.0.2
+tqdm==4.66.5
+pandas==2.0.3
+opencv-python==4.8.1.78
+mlflow==2.17.2
+spconv-cu111
+pillow==10.4.0
+scikit-learn==1.6.1
+typing-extensions==4.12.2

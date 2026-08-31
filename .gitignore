@@ -1,0 +1,22 @@
+# Local data and generated outputs are never versioned.
+dataset/训练集、验证集/
+dataset/测试集/
+outputs/
+work/
+log/
+runs/
+
+# Build products and Python cache.
+lib/hais_ops/build/
+lib/hais_ops/*.egg-info/
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+
+# Local environment and editor files.
+.venv/
+.idea/
+.vscode/
+.DS_Store
+*.swp

@@ -1,0 +1,115 @@
+{
+  "schema": "ev-uav-m243-test-actual-v1",
+  "base_package": "artifacts/m233_base_submission.zip",
+  "raw_score_dir": "artifacts/m243_raw_scores",
+  "candidate_raw_threshold": 0.718,
+  "base_threshold": 0.724,
+  "rule": "M243: admit only new candidates in 50-unit time bins with no M233 positive event; top-k is per video, ranked by max raw score.",
+  "label_usage": "No test labels are read.",
+  "aggregate": {
+    "videos": 2,
+    "candidate_components": 5445,
+    "empty_components": 146,
+    "empty_new_events": 250
+  },
+  "videos": [
+    {
+      "name": "test_022",
+      "event_count": 602549,
+      "base_positive": 5966,
+      "candidate_positive": 10761,
+      "candidate_new_events": 4795,
+      "empty_components": 20,
+      "empty_new_events": 35,
+      "variants": {
+        "empty_topk_1": {
+          "selected_components": 1,
+          "selected_events": 1,
+          "event_indices": [
+            440153
+          ],
+          "max_raw_scores": [
+            0.8994736671447754
+          ]
+        },
+        "empty_topk_2": {
+          "selected_components": 2,
+          "selected_events": 2,
+          "event_indices": [
+            440153,
+            441102
+          ],
+          "max_raw_scores": [
+            0.8994736671447754,
+            0.8969001770019531
+          ]
+        },
+        "empty_topk_4": {
+          "selected_components": 4,
+          "selected_events": 4,
+          "event_indices": [
+            440153,
+            441102,
+            438484,
+            439541
+          ],
+          "max_raw_scores": [
+            0.8994736671447754,
+            0.8969001770019531,
+            0.8761700391769409,
+            0.8556385040283203
+          ]
+        }
+      }
+    },
+    {
+      "name": "test_023",
+      "event_count": 620440,
+      "base_positive": 6134,
+      "candidate_positive": 8816,
+      "candidate_new_events": 2682,
+      "empty_components": 126,
+      "empty_new_events": 215,
+      "variants": {
+        "empty_topk_1": {
+          "selected_components": 1,
+          "selected_events": 1,
+          "event_indices": [
+            155405
+          ],
+          "max_raw_scores": [
+            0.949881374835968
+          ]
+        },
+        "empty_topk_2": {
+          "selected_components": 2,
+          "selected_events": 2,
+          "event_indices": [
+            155405,
+            154078
+          ],
+          "max_raw_scores": [
+            0.949881374835968,
+            0.9495401978492737
+          ]
+        },
+        "empty_topk_4": {
+          "selected_components": 4,
+          "selected_events": 4,
+          "event_indices": [
+            155405,
+            154078,
+            170423,
+            155539
+          ],
+          "max_raw_scores": [
+            0.949881374835968,
+            0.9495401978492737,
+            0.9191914796829224,
+            0.9161333441734314
+          ]
+        }
+      }
+    }
+  ]
+}
