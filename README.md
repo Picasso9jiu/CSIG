@@ -21,14 +21,49 @@ DREAM 面向事件相机小目标检测：它先从整段事件流中提取无�
 隐藏测试集标签不公开，也不包含在本仓库中，因此上述平台分数无法本地重算；但是提交
 TXT 的事件顺序、逐行字段、固定无标签决策链以及官方 ZIP 包都可以完整复现和审计。
 
+## 运行前提
+
+本文中的 shell 命令均在 **WSL/Ubuntu 的 Bash** 中验证，不是在 Windows PowerShell
+中直接运行。快速复现和完整 checkpoint 推理的共同前提如下：
+
+- 已安装 Git、Git LFS 和 Conda/Miniconda；
+- 已从赛事官方渠道取得公开测试集，目录中存在 test/test_000.npz 到
+  test/test_030.npz；
+- GitHub 克隆完成后必须执行 Git LFS 拉取，否则 checkpoint 和 ZIP 文件会只是 LFS
+  指针文件，无法使用。
+
+若系统尚未安装 Git LFS，可在 Ubuntu/WSL 中执行：
+
+~~~bash
+sudo apt update
+sudo apt install -y git git-lfs
+git lfs install
+~~~
+
+### 创建快速核验环境
+
+快速复现只重建并核验已发布的官方 ZIP，不重新运行神经网络。因此它只需要 Python 3.9
+和 NumPy 1.23.5，不需要 CUDA、PyTorch、spconv 或 HAIS_OP。建议单独创建一个轻量
+环境，避免把“能否快速核验”和“能否本地编译完整模型”混在一起：
+
+~~~bash
+conda create -n evsod-verify python=3.9 pip -y
+conda activate evsod-verify
+python -m pip install --upgrade pip
+python -m pip install numpy==1.23.5
+
+python --version
+python -c "import numpy; print('numpy:', numpy.__version__)"
+~~~
+
+预期 Python 版本为 3.9.x，NumPy 版本为 1.23.5。若已有满足这两个条件的环境，可以
+直接激活已有环境；下文不再假设读者已经拥有名为 EV39 的环境。
+
 ## 快速复现官方提交包
 
 这是推荐的查验路径。它不需要 GPU，也不需要重新训练或重新跑网络：脚本以版本化的
 M233 基础提交包和 M243 冻结审计报告，精确重建官方 M244 ZIP，再对每一行输出与
 公开测试事件逐项核验。
-
-前提：已从赛事官方渠道取得测试集，且数据目录内包含 test/test_000.npz 到
-test/test_030.npz。
 
 ~~~bash
 git clone https://github.com/Picasso9jiu/CSIG.git EVSOD
@@ -36,7 +71,7 @@ cd EVSOD
 git lfs install
 git lfs pull
 
-conda activate EV39
+conda activate evsod-verify
 export DATA_ROOT="/path/to/测试集"
 bash scripts/run_m244_fast.sh
 ~~~
@@ -77,6 +112,14 @@ artifacts/m244_reference_submission.zip   # 官方 M244 归档包
 其中 scripts/audit_m243_raw_scores.py 可从原始分数和公开输入事件重新计算审计报告；
 scripts/rebuild_m244.py 会在写出 ZIP 前核验每个 TXT 的行数、x/y/t/p 字段顺序和
 二值标签范围。
+
+若快速复现失败，优先按以下顺序检查：
+
+1. 执行 git lfs pull 后，确认 artifacts/ 下的 ZIP 和 NPY 文件不是很小的文本指针；
+2. 确认 DATA_ROOT 指向“测试集”这一层，而不是直接指向 test/；脚本会读取
+   DATA_ROOT/test/；
+3. 确认当前环境中 numpy 版本可被导入；
+4. 不要在 Windows PowerShell 中直接运行 Bash 脚本，应进入 WSL/Ubuntu 后执行。
 
 ## DREAM 方法详解
 
@@ -227,11 +270,16 @@ scripts/audit_m243_raw_scores.py 从冻结原始分数和输入事件生成，�
 [docs/M244_RELEASE_NOTES.md](docs/M244_RELEASE_NOTES.md)。完整实验历史见
 [note.md](note.md)，其中保留了成功和失败的尝试，供后续研究避免重复无效方向。
 
-## 环境配置
+## 完整 checkpoint 推理与重训环境
 
-发布版本在 WSL/Ubuntu 中验证，环境为 Python 3.9、PyTorch 1.9.1 + CUDA 11.1、
-torchvision 0.10.1、spconv-cu111、NumPy 1.23.5 和 CUDA 11.x Toolkit。使用完整
-checkpoint 推理需要能够编译 HAIS_OP CUDA 扩展和可用 GPU。
+本节仅用于“使用 checkpoint 完整推理”和“从头重训主模型链”，**不是**快速复现官方
+提交包的前置条件。发布版本在 WSL/Ubuntu 中验证，完整环境为 Python 3.9、
+PyTorch 1.9.1 + CUDA 11.1、torchvision 0.10.1、spconv-cu111、NumPy 1.23.5 和
+CUDA 11.x Toolkit；需要 NVIDIA GPU，并且需要成功编译 HAIS_OP CUDA 扩展。
+
+为与原始实验环境一致，下列命令使用环境名 EV39。若此前已经创建过同名环境，请跳过
+第一行创建命令，直接执行 conda activate EV39；快速核验环境 evsod-verify 可以保留，
+两者互不影响。
 
 ~~~bash
 conda create -n EV39 python=3.9 pip -y
@@ -260,7 +308,8 @@ export LD_LIBRARY_PATH="$CONDA_PREFIX/lib/python3.9/site-packages/torch/lib:$CON
 python -c "import torch, HAIS_OP; import spconv.pytorch; print(torch.cuda.is_available(), 'HAIS_OP: ok')"
 ~~~
 
-仓库中的大文件由 Git LFS 管理。克隆前或克隆后请确保执行过：
+只有上面的命令输出 True 和 HAIS_OP: ok 后，才应运行完整 checkpoint 推理或重训。
+仓库中的大文件由 Git LFS 管理；若未在“运行前提”部分完成，可在仓库根目录执行：
 
 ~~~bash
 git lfs install
