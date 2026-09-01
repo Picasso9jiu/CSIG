@@ -84,6 +84,11 @@ python scripts/package_review_materials.py \
 自动排除数据集、Git 元数据、编译产物和运行输出。解压后可按 `EVSOD/README.md` 开始
 复现。
 
+仓库中的 `.pt`、`.pkl.gz` 和提交归档通过 Git LFS 管理。如果邮件系统限制附件大小，
+不要删除模型文件；可将代码、报告和运行说明作为附件，并在邮件正文同时提供
+<https://github.com/Picasso9jiu/CSIG> 及对应 Git LFS 下载地址，明确说明模型文件仍是
+同一版本的审查材料。
+
 ## 提交前人工确认
 
 - [ ] 排名、队伍名、平台英文名、赛道号已由官方信息确认；

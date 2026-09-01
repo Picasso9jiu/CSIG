@@ -178,6 +178,8 @@ python scripts/package_review_materials.py \
 工具会拒绝覆盖同名文件，并在压缩包内写入
 `EVSOD/review_materials_manifest.json`（逐文件大小和 SHA-256）。它会自动排除数据集
 NPZ、Git 元数据、编译产物和运行输出；生成后仍应按清单人工确认文件名和收件邮箱。
+模型与 verifier 通过 Git LFS 管理；若邮件附件大小受限，请保留全部模型材料，并在邮件
+正文提供本仓库地址及对应 LFS 下载说明，不要用缺失权重的精简包代替完整审查材料。
 
 ## DREAM 方法详解
 
