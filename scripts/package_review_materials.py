@@ -8,6 +8,7 @@ import hashlib
 import json
 import zipfile
 from pathlib import Path
+from typing import Optional
 
 
 # Never put local datasets or generated/runtime files into the review archive.
@@ -19,6 +20,7 @@ EXCLUDE_DIRS = {
     '训练集、验证集', '测试集', 'EV-UAV-dataset',
 }
 EXCLUDE_SUFFIXES = {'.pyc', '.pyo', '.so', '.npz'}
+DATASET_PAYLOAD_DIRS = {'train', 'val', 'test', '训练集、验证集', '测试集', 'EV-UAV-dataset'}
 REQUIRED = [
     'README.md',
     'requirements.txt',
@@ -55,14 +57,23 @@ def is_lfs_pointer(path: Path) -> bool:
     return data.startswith(b'version https://git-lfs.github.com/spec/v1')
 
 
-def iter_files(root: Path):
+def iter_files(root: Path, excluded_root: Optional[Path] = None):
     for path in sorted(root.rglob('*')):
         if not path.is_file():
+            continue
+        if excluded_root is not None and (path == excluded_root or excluded_root in path.parents):
             continue
         relative = path.relative_to(root)
         if any(part in EXCLUDE_DIRS for part in relative.parts):
             continue
         if path.suffix.lower() in EXCLUDE_SUFFIXES:
+            continue
+        # Keep the Python loaders under dataset/, but never copy payload files
+        # placed in dataset/{train,val,test} (or a conventional datasets/ root).
+        parts = relative.parts
+        if parts and parts[0] in {'datasets', 'data'}:
+            continue
+        if len(parts) >= 2 and parts[0] == 'dataset' and parts[1] in DATASET_PAYLOAD_DIRS:
             continue
         yield path, relative
 
@@ -118,7 +129,7 @@ def main() -> None:
         raise FileExistsError('refusing to overwrite existing archive: {}'.format(output))
 
     selected = []
-    for source, relative in iter_files(root):
+    for source, relative in iter_files(root, excluded_root=output_dir):
         relative_text = relative.as_posix()
         if args.without_artifacts and relative_text.startswith('artifacts/'):
             continue
