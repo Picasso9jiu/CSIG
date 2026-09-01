@@ -1,0 +1,51 @@
+{
+  "schema": "evsod-dream-model-manifest-v1",
+  "release": "DREAM/M244",
+  "description": "最终官方提交所使用的模型与必要推理 artifact；数据集不包含在仓库中。",
+  "models": [
+    {
+      "file": "checkpoints/m10_dense_views2_epoch_002_seed42.pt",
+      "role": "低事件量专家（整段事件数 <= 30000）",
+      "selection": "M10 epoch 002, seed 42",
+      "used_by_final_m244": true,
+      "sha256": "5c89c89a165469c0a4e8286d4644d60d2f82cf5775edbb724f626e24e67d8935"
+    },
+    {
+      "file": "checkpoints/m26_targetflow_m20e3_epoch_003_seed53.pt",
+      "role": "高事件量主专家",
+      "selection": "M26 epoch 003, seed 53",
+      "used_by_final_m244": true,
+      "sha256": "13f7d4d8ab6bdcaaa98f3f906a7d32e687c17454b88b42b94752eec04257f7c4"
+    },
+    {
+      "file": "checkpoints/m111_phase_specialist_seed72_73_76_average.pt",
+      "role": "半时间 bin 相位专家（偏移 25）",
+      "selection": "seed 72/73/76 一轮 checkpoint 的 float64 参数平均",
+      "used_by_final_m244": true,
+      "sha256": "15fd690e3bb177649f2a995aaf00b947fd6ac0dfb147ea6a9cdf5847b96aded2"
+    },
+    {
+      "file": "artifacts/m124_background_verifier_threshold065.pkl.gz",
+      "role": "M124 冻结持续背景组件核验器基 artifact；运行时按域生成阈值副本",
+      "selection": "由完整视频可观测事件统计选择 0.94/0.62/0.65/0.63",
+      "used_by_final_m244": true,
+      "sha256": "7cee5fbcb45ad59455ead98372a8b895c28e7c3866913844d853dcf904213eb4"
+    }
+  ],
+  "supporting_checkpoints": [
+    "checkpoints/m4_dacc_m5_best_loss_seed42.pt",
+    "checkpoints/m13_dense_views4_ft30_epoch_003_seed42.pt",
+    "checkpoints/m15_e3_low_lr_epoch_008_seed43.pt",
+    "checkpoints/m20_attn_dense_views8_epoch_003_seed48.pt",
+    "checkpoints/m111_phase_seed72_epoch_001.pt",
+    "checkpoints/m111_phase_seed73_epoch_001.pt",
+    "checkpoints/m111_phase_seed76_epoch_001.pt"
+  ],
+  "submission_artifacts": [
+    "artifacts/m233_base_submission.zip",
+    "artifacts/m243_raw_scores/test_022.npy",
+    "artifacts/m243_raw_scores/test_023.npy",
+    "artifacts/m243_test_actual.json",
+    "artifacts/m244_reference_submission.zip"
+  ]
+}

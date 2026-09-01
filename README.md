@@ -21,6 +21,30 @@ DREAM 面向事件相机小目标检测：它先从整段事件流中提取无�
 隐藏测试集标签不公开，也不包含在本仓库中，因此上述平台分数无法本地重算；但是提交
 TXT 的事件顺序、逐行字段、固定无标签决策链以及官方 ZIP 包都可以完整复现和审计。
 
+## 官方真实性审查材料对照
+
+本仓库按组委会要求同时提供四类材料，且不包含数据集：
+
+| 官方要求 | 本仓库对应内容 |
+| --- | --- |
+| ① 算法代码 | `model/`、`dataset/`、`utils/`、`lib/hais_ops/`、`train_temporal_memory.py`、`submit_challenge2.py`、`test2.py` |
+| ② 模型文件 | `checkpoints/` 中的 M10、M26、M111 平均模型，以及 `artifacts/m124_background_verifier_threshold065.pkl.gz` |
+| ③ 算法报告 | [`docs/ALGORITHM_REPORT_DREAM.md`](docs/ALGORITHM_REPORT_DREAM.md) |
+| ④ 运行说明 | [`docs/RUNNING_GUIDE.md`](docs/RUNNING_GUIDE.md)、[`docs/REVIEW_CHECKLIST.md`](docs/REVIEW_CHECKLIST.md) 和本文 README |
+
+训练/推理配置、固定参数和阶段间 checkpoint 对应关系分别保存在 `configs/`、
+`scripts/retrain_m26_chain.sh`、`scripts/run_m244_from_checkpoints.sh` 和
+`checkpoints/MODEL_MANIFEST.json` 中。`scripts/run_train_and_test.sh` 提供从训练到
+测试的一键入口；`scripts/package_review_materials.py` 可按官方命名规则生成审查压缩包。
+
+提交材料中不发送数据集。审查人员需自行从赛事官方渠道取得原始 NPZ，并按运行说明设置
+训练集、验证集和测试集路径。
+
+官方提交前的材料、命名和逐项核验清单见
+[`docs/REVIEW_CHECKLIST.md`](docs/REVIEW_CHECKLIST.md)。需要生成正式审查压缩包时，使用
+该清单末尾的 `scripts/package_review_materials.py` 命令，并将排名、队伍名称、平台英文名
+和赛道号替换为官方最终信息。
+
 ## 获取代码与大文件
 
 请先在 WSL/Ubuntu 中安装 Git 与 Git LFS、克隆仓库并拉取 LFS 文件。后续所有命令都在
@@ -42,7 +66,8 @@ git lfs pull
 中直接运行。发布版本使用 Python 3.9、PyTorch 1.9.1 + CUDA 11.1、torchvision
 0.10.1、spconv-cu111、NumPy 1.23.5 和 CUDA 11.x Toolkit。环境名称固定为 EV39。
 
-若本机尚未创建 EV39，请在仓库根目录执行：
+若本机尚未创建 EV39，请在仓库根目录执行（快速核验只需要其中的 Python 3.9 和 NumPy；
+完整推理/重训再安装 CUDA 依赖）：
 
 ~~~bash
 conda create -n EV39 python=3.9 pip -y
@@ -53,6 +78,13 @@ python -m pip install \
   torch==1.9.1+cu111 torchvision==0.10.1+cu111 \
   -f https://download.pytorch.org/whl/torch_stable.html
 python -m pip install -r requirements.txt
+~~~
+
+也可以使用仓库提供的 [`environment.yml`](environment.yml) 一次创建完整环境：
+
+~~~bash
+conda env create -f environment.yml
+conda activate EV39
 ~~~
 
 上面的 EV39 环境已经足以执行下方“快速复现官方提交包”。快速脚本只重建和核验已发布
@@ -127,6 +159,25 @@ artifacts/m244_reference_submission.zip   # 官方 M244 归档包
 其中 scripts/audit_m243_raw_scores.py 可从原始分数和公开输入事件重新计算审计报告；
 scripts/rebuild_m244.py 会在写出 ZIP 前核验每个 TXT 的行数、x/y/t/p 字段顺序和
 二值标签范围。
+
+## 官方审查压缩包
+
+组委会要求的邮件/压缩包命名格式、四类材料和发送前检查项见
+[`docs/REVIEW_CHECKLIST.md`](docs/REVIEW_CHECKLIST.md)。确认官方排名、队伍中文名称、
+平台英文名称和赛道号后，可从仓库根目录生成不含数据集的材料包：
+
+~~~bash
+python scripts/package_review_materials.py \
+  --rank <最终排名序号> \
+  --team-cn "<队伍中文名称>" \
+  --platform-en "<评测平台英文名称>" \
+  --track <赛道号> \
+  --output-dir review_packages
+~~~
+
+工具会拒绝覆盖同名文件，并在压缩包内写入
+`EVSOD/review_materials_manifest.json`（逐文件大小和 SHA-256）。它会自动排除数据集
+NPZ、Git 元数据、编译产物和运行输出；生成后仍应按清单人工确认文件名和收件邮箱。
 
 ## DREAM 方法详解
 

@@ -8,11 +8,21 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DATA_ROOT="${DATA_ROOT:?Set DATA_ROOT to the directory containing test/}"
 TEST_ROOT="${TEST_ROOT:-$DATA_ROOT/test}"
 OUTPUT_ROOT="${OUTPUT_ROOT:-$PROJECT_DIR/outputs/m244_from_checkpoints}"
+M10_CHECKPOINT="${M10_CHECKPOINT:-$PROJECT_DIR/checkpoints/m10_dense_views2_epoch_002_seed42.pt}"
+M26_CHECKPOINT="${M26_CHECKPOINT:-$PROJECT_DIR/checkpoints/m26_targetflow_m20e3_epoch_003_seed53.pt}"
+M111_CHECKPOINT="${M111_CHECKPOINT:-$PROJECT_DIR/checkpoints/m111_phase_specialist_seed72_73_76_average.pt}"
+M124_SOURCE_ARTIFACT="${M124_SOURCE_ARTIFACT:-$PROJECT_DIR/artifacts/m124_background_verifier_threshold065.pkl.gz}"
 
 if [[ ! -d "$TEST_ROOT" ]]; then
   echo "Missing test directory: $TEST_ROOT" >&2
   exit 2
 fi
+for required_path in "$M10_CHECKPOINT" "$M26_CHECKPOINT" "$M111_CHECKPOINT" "$M124_SOURCE_ARTIFACT"; do
+  if [[ ! -f "$required_path" ]]; then
+    echo "Missing release asset: $required_path" >&2
+    exit 2
+  fi
+done
 if [[ -e "$OUTPUT_ROOT" ]]; then
   echo "Refusing to overwrite existing OUTPUT_ROOT: $OUTPUT_ROOT" >&2
   exit 2
@@ -43,11 +53,11 @@ COMMON_ARGS=(
   TEST.prediction_threshold=0.7226
   TEMPORAL_FRAME.temporal_frame_enabled=false
   TEMPORAL_MEMORY.temporal_memory_enabled=true
-  TEMPORAL_MEMORY.temporal_memory_model_path="$PROJECT_DIR/checkpoints/m26_targetflow_m20e3_epoch_003_seed53.pt"
-  TEMPORAL_MEMORY.temporal_memory_secondary_model_path="$PROJECT_DIR/checkpoints/m10_dense_views2_epoch_002_seed42.pt"
+  TEMPORAL_MEMORY.temporal_memory_model_path="$M26_CHECKPOINT"
+  TEMPORAL_MEMORY.temporal_memory_secondary_model_path="$M10_CHECKPOINT"
   TEMPORAL_MEMORY.temporal_memory_secondary_max_event_count=30000
   TEMPORAL_MEMORY.temporal_memory_phase_specialist_enabled=true
-  TEMPORAL_MEMORY.temporal_memory_phase_specialist_model_path="$PROJECT_DIR/checkpoints/m111_phase_specialist_seed72_73_76_average.pt"
+  TEMPORAL_MEMORY.temporal_memory_phase_specialist_model_path="$M111_CHECKPOINT"
   TEMPORAL_MEMORY.temporal_memory_phase_specialist_event_count_cutoff=30000
   TEMPORAL_MEMORY.temporal_memory_phase_specialist_weight=0.25
   TEMPORAL_MEMORY.temporal_memory_phase_specialist_offset=25
@@ -111,7 +121,7 @@ run_group() {
     return
   fi
   python "$PROJECT_DIR/scripts/prepare_m124_artifact.py" \
-    --source "$PROJECT_DIR/artifacts/m124_background_verifier_threshold065.pkl.gz" \
+    --source "$M124_SOURCE_ARTIFACT" \
     --destination "$artifact" \
     --threshold "$threshold"
   mkdir -p "$output_dir"
